@@ -504,7 +504,8 @@
                     <button class="filter-btn" id="bmwBtn">Bmw</button>
                     <button class="filter-btn" id="animeBtn">Anime</button>
                     <button class="filter-btn" id="spaceBtn">Space</button>
-                    <button class="filter-btn" id="animalBtn">animal</button>
+                    <button class="filter-btn" id="animalBtn">Animal</button>
+                    <button class="filter-btn" id="gameBtn">Game</button>
                     <button class="filter-btn" id="showAllBtn">Show All</button>
                 </div>
                 
@@ -598,6 +599,7 @@
         animeBtn.addEventListener('click', () => filterImages('anime'));
         spaceBtn.addEventListener('click', () => filterImages('space'));
         animalBtn.addEventListener('click', () => filterImages('animal'));
+        gameBtn.addEventListener('click', () => filterImages('game'));
 
 
         searchInput.addEventListener('keypress', function (e) {
@@ -802,11 +804,7 @@
                 // Wait for all download URLs to be fetched
                 Promise.all(promises).then(() => {
                     // Sort images by timestamp (newest first)
-                    allImages.sort((a, b) => {
-                        const timeA = parseInt(a.name.split('_')[0]);
-                        const timeB = parseInt(b.name.split('_')[0]);
-                        return timeB - timeA;
-                    });
+                    allImages.sort(() => Math.random() - 0.5);
                     
                     // Initially, filteredImages is the same as allImages
                     filteredImages = [...allImages];
