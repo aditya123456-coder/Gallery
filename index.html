@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        });
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="icon.png?v=2">
+    <title>Gallery</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #000000e1;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+
+            margin: auto;
+            padding: 0 20px;
+        }
+
+        header {
+            color: white;
+            background-color: rgba(0, 0, 0, 0.744);
+            backdrop-filter: blur(5px);
+            top: 0;
+            display: flex;
+            z-index: 10;
+            position: sticky;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        .upload-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .upload-box {
+            border: 3px dashed #4a6fc9;
+            border-radius: 12px;
+            padding: 40px 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(74, 111, 201, 0.05);
+        }
+
+        .upload-box:hover,
+        .upload-box.drag-over {
+            background: rgba(74, 111, 201, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            color: #4a6fc9;
+            margin-bottom: 15px;
+        }
+
+        .upload-box h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .upload-box p {
+            margin-bottom: 20px;
+            color: #7f8c8d;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: #4a6fc9;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(74, 111, 201, 0.4);
+        }
+
+        .upload-btn:hover {
+            background: #3a5bb0;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(74, 111, 201, 0.5);
+        }
+
+        .upload-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #4a6fc9, #6a89cc);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status-text {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .gallery-container {
+            border-radius: 16px;
+            padding: 10px 10px;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-title:after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, #4a6fc9, #6a89cc);
+            margin-top: 10px;
+            border-radius: 2px;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 50px;
+            border: 2px solid #ddd;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4a6fc9;
+            box-shadow: 0 2px 12px rgba(74, 111, 201, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+
+        /* Filter Buttons */
+        .filter-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #4a6ec900;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-btn:hover {
+            background: #3a5bb0;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 25px;
+        }
+
+        .image-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 100%;
+
+        }
+
+        .image-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .image-container {
+            height: 300px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 2px 2px 8px black;
+            border-radius: 12px;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .image-card:hover .image-container img {
+            transform: scale(1.05);
+        }
+
+        .card-footer {
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .image-name {
+            font-weight: 500;
+            color: #2c3e50;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .download-btn i {
+            margin-right: 8px;
+        }
+
+        .download-btn:hover {
+            background: #3a5bb0;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(74, 111, 201, 0.4);
+        }
+
+        .empty-gallery {
+            text-align: center;
+            padding: 20px 10px;
+            color: #7f8c8d;
+            grid-column: 1 / -1;
+        }
+
+        .empty-gallery i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: #bdc3c7;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 40px;
+        }
+
+        .instructions h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.8rem;
+            position: relative;
+        }
+
+        .instructions h2:after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, #4a6fc9, #6a89cc);
+            margin: 10px auto 20px;
+            border-radius: 2px;
+        }
+
+        .instructions ol {
+            padding-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .instructions code {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+            margin-top: 30px;
+            font-size: 1.1rem;
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            grid-column: 1 / -1;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4a6fc9;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .load-more-container {
+            text-align: center;
+            margin-top: 30px;
+            grid-column: 1 / -1;
+        }
+
+        .load-more-btn {
+            background: #4a6fc9;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(74, 111, 201, 0.4);
+        }
+
+        .load-more-btn:hover {
+            background: #3a5bb0;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(74, 111, 201, 0.5);
+        }
+
+        .load-more-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @media (max-width: 768px) {
+
+            header h1 {
+                font-size: 2.2rem;
+            }
+
+            .gallery-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .section-title:after {
+                margin: 10px auto 0;
+            }
+
+            .filter-buttons {
+                margin-top: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .upload-container,
+            .gallery-container {
+                padding: 10px;
+            }
+
+            .instructions {
+                padding: 20px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .filter-buttons {
+                gap: 10px;
+            }
+
+            .filter-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .gallery {
+                grid-template-columns: repeat(3, 1fr);
+                /* 3 columns on medium screens */
+            }
+        }
+
+        @media (max-width: 900px) {
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+                /* 2 columns on tablets */
+            }
+        }
+
+        @media (max-width: 600px) {
+            .gallery {
+                grid-template-columns: 1fr;
+                /* 1 column on mobile */
+            }
+        }
+
+        .header-wrapper {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 10px 15px;
+            width: 100%;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            float: left;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: none;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .search-bar input {
+            padding: 10px;
+            width: 250px;
+            border-radius: 25px;
+            font-size: 1rem;
+            background: none;
+            border: thin solid white;
+            color: white;
+            border-top: none;
+            border-right: none;
+        }
+
+        .search-bar button {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            background: #4a6ec900;
+            color: white;
+            border: none;
+            border: thin solid white;
+            border-bottom: none;
+            border-left: none;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-left: auto;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                display: none;
+                flex-direction: column;
+                background-color: rgba(0, 0, 0, 0.9);
+                padding: 20px;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                right: 0;
+                z-index: 999;
+            }
+
+            .sidebar.active {
+                display: flex;
+            }
+
+            .search-bar {
+                width: 70%;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-top: 10px;
+            }
+
+            .search-bar input {
+                width: 55%;
+            }
+
+            .filter-btn {
+                width: 100%;
+                text-align: center;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="header-wrapper">
+             <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <!-- Logo -->
+            <img src="icon.png" alt="Logo" class="logo" />
+
+            <!-- Hamburger menu for mobile -->
+           
+
+            <!-- Sidebar menu (appears on mobile) -->
+            <div class="sidebar" id="mobileSidebar">
+                <button class="filter-btn" id="natureBtn">Nature</button>
+                <button class="filter-btn" id="bmwBtn">Bmw</button>
+                <button class="filter-btn" id="animeBtn">Anime</button>
+                <button class="filter-btn" id="spaceBtn">Space</button>
+                <button class="filter-btn" id="animalBtn">Animal</button>
+                <button class="filter-btn" id="gameBtn">Game</button>
+                <button class="filter-btn" id="designBtn">Design</button>
+                <button class="filter-btn" id="carBtn">Cars</button>
+                <button class="filter-btn" id="showAllBtn">Show All</button>
+            </div>
+
+            <!-- Search bar -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search wallpapers..." />
+                <button id="searchBtn">Search</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+
+        <main>
+            <div style="display: none;" class="upload-container">
+                <div class="upload-box" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <h2>Upload Your Images</h2>
+                    <p>Drag & drop images here or click to browse</p>
+                    <input type="file" id="fileInput" class="file-input" accept="image/*">
+                    <button class="upload-btn" id="uploadBtn">Select Image</button>
+                </div>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress" id="progressBar"></div>
+                    </div>
+                    <p class="status-text" id="statusText">Uploading: 0%</p>
+                </div>
+            </div>
+
+            <div class="gallery-container">
+                <div class="gallery-header">
+                </div>
+
+                <div class="gallery" id="imageGallery">
+                    <!-- Loading spinner -->
+                    <div class="loader" id="galleryLoader">
+                        <div class="spinner"></div>
+                        <p>Loading images from Firebase Storage...</p>
+                    </div>
+
+                    <!-- Images will be added here dynamically -->
+                    <div class="empty-gallery" id="emptyGallery">
+                        <i class="fas fa-images"></i>
+                        <h3>No images uploaded yet</h3>
+                        <p>Upload your first image to see it here</p>
+                    </div>
+                </div>
+
+                <!-- Load More Button Container -->
+                <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+                    <button class="load-more-btn" id="loadMoreBtn">Load More Images</button>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p>Image Gallery ORIGINE &copy; 2023</p>
+        </footer>
+    </div>
+
+    <!-- Import Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBj72SFCM2wSHEP5IEqOCFNMP_FiL0gw28",
+            authDomain: "test-489a1.firebaseapp.com",
+            databaseURL: "https://test-489a1-default-rtdb.firebaseio.com",
+            projectId: "test-489a1",
+            storageBucket: "test-489a1.firebasestorage.app",
+            messagingSenderId: "978892656529",
+            appId: "1:978892656529:web:ea00af8b6e3768abba1430",
+            measurementId: "G-N1382Z67VH"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+
+        // DOM elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('statusText');
+        const imageGallery = document.getElementById('imageGallery');
+        const emptyGallery = document.getElementById('emptyGallery');
+        const galleryLoader = document.getElementById('galleryLoader');
+        const loadMoreContainer = document.getElementById('loadMoreContainer');
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const natureBtn = document.getElementById('natureBtn');
+        const carBtn = document.getElementById('carBtn');
+        const showAllBtn = document.getElementById('showAllBtn');
+
+        // Pagination and search variables
+        const imagesPerPage = 10;
+        let allImages = [];
+        let filteredImages = [];
+        let currentPage = 1;
+        let totalImages = 0;
+        let searchTerm = '';
+        let activeFilter = '';
+
+        // Event listeners
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        loadMoreBtn.addEventListener('click', loadMoreImages);
+        searchBtn.addEventListener('click', handleSearch);
+        natureBtn.addEventListener('click', () => filterImages('nature'));
+        bmwBtn.addEventListener('click', () => filterImages('bmw'));
+        showAllBtn.addEventListener('click', () => filterImages('all'));
+        animeBtn.addEventListener('click', () => filterImages('anime'));
+        spaceBtn.addEventListener('click', () => filterImages('space'));
+        animalBtn.addEventListener('click', () => filterImages('animal'));
+        gameBtn.addEventListener('click', () => filterImages('game'));
+        designBtn.addEventListener('click', () => filterImages('design'));
+        carBtn.addEventListener('click', () => filterImages('car'));
+
+
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+
+        // Drag and drop events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropZone.classList.add('drag-over');
+        }
+
+        function unhighlight() {
+            dropZone.classList.remove('drag-over');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) {
+                handleFiles(files);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length) {
+                handleFiles(files);
+            }
+        }
+
+        function handleFiles(files) {
+            const file = files[0];
+
+            // Validate file type
+            if (!file.type.match('image.*')) {
+                alert('Please select an image file (JPEG, PNG, GIF, etc.)');
+                return;
+            }
+
+            // Check file size (max 5MB)
+            if (file.size > 20 * 1024 * 1024) {
+                alert('File size exceeds 5MB limit');
+                return;
+            }
+
+            // Show progress bar
+            progressContainer.style.display = 'block';
+            statusText.textContent = 'Uploading: 0%';
+            progressBar.style.width = '0%';
+
+            // Create a storage reference
+            const storageRef = storage.ref();
+            const fileName = Date.now() + '_' + file.name;
+            const fileRef = storageRef.child('images/' + fileName);
+
+            // Upload file
+            const uploadTask = fileRef.put(file);
+
+            // Listen for state changes, errors, and completion
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Progress monitoring
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.style.width = progress + '%';
+                    statusText.textContent = `Uploading: ${Math.round(progress)}%`;
+                },
+                (error) => {
+                    // Handle unsuccessful uploads
+                    console.error('Upload error:', error);
+                    statusText.textContent = 'Upload failed: ' + error.message;
+                    progressBar.style.background = '#e74c3c';
+
+                    // Show detailed error message
+                    if (error.code === 'storage/unauthorized') {
+                        statusText.textContent += '. Check your Firebase Storage rules.';
+                    }
+                },
+                () => {
+                    // Handle successful upload
+                    statusText.textContent = 'Upload complete!';
+                    progressBar.style.background = '#2ecc71';
+
+                    // Get download URL and add to gallery
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Add image to gallery
+                        addImageToGallery(downloadURL, fileName, true);
+
+                        // Add to allImages array
+                        allImages.unshift({
+                            url: downloadURL,
+                            name: fileName,
+                            ref: fileRef
+                        });
+
+                        // Apply current filter
+                        applyFilter();
+
+                        // Reset form after delay
+                        setTimeout(() => {
+                            progressContainer.style.display = 'none';
+                            fileInput.value = '';
+                        }, 2000);
+                    });
+                }
+            );
+        }
+
+        function addImageToGallery(url, name, prepend = false) {
+            // Check if image with the same URL already exists in the gallery
+            const existingImages = document.querySelectorAll('.image-container img');
+            for (let img of existingImages) {
+                if (img.src === url) {
+                    return; // Duplicate found, don't add again
+                }
+            }
+
+            // Remove empty gallery message if it exists
+            if (emptyGallery) {
+                emptyGallery.style.display = 'none';
+            }
+
+            // Hide loader if it's shown
+            galleryLoader.style.display = 'none';
+
+            // Create image card
+            const imageCard = document.createElement('div');
+            imageCard.className = 'image-card';
+            imageCard.innerHTML = `
+    <div class="image-container">
+        <a href="${url}" target="_blank">
+            <img src="${url}" alt="${name}">
+        </a>
+    </div>
+`;
+            // Add to gallery
+            if (prepend) {
+                imageGallery.insertBefore(imageCard, imageGallery.firstChild);
+            } else {
+                imageGallery.appendChild(imageCard);
+            }
+        }
+
+
+        // Function to load images from Firebase Storage
+        function loadImages() {
+            // Show loader
+            galleryLoader.style.display = 'block';
+
+            // Hide empty gallery message initially
+            emptyGallery.style.display = 'none';
+
+            // Create a reference to the images folder
+            const storageRef = storage.ref();
+            const imagesRef = storageRef.child('images/');
+
+            // List all items in the images folder
+            imagesRef.listAll().then((result) => {
+                // Hide loader
+                galleryLoader.style.display = 'none';
+
+                // Clear existing arrays
+                allImages = [];
+                filteredImages = [];
+
+                // Process each image reference
+                const promises = result.items.map(itemRef => {
+                    return itemRef.getDownloadURL().then(url => {
+                        // Extract the filename from the path
+                        const pathParts = itemRef.fullPath.split('/');
+                        const fileName = pathParts[pathParts.length - 1];
+
+                        // Add to allImages array
+                        allImages.push({
+                            url: url,
+                            name: fileName,
+                            ref: itemRef
+                        });
+                    });
+                });
+
+                // Wait for all download URLs to be fetched
+                Promise.all(promises).then(() => {
+                    // Sort images by timestamp (newest first)
+                    allImages.sort(() => Math.random() - 0.5);
+
+                    // Initially, filteredImages is the same as allImages
+                    filteredImages = [...allImages];
+                    totalImages = filteredImages.length;
+
+                    if (allImages.length === 0) {
+                        // Show empty gallery message if no images
+                        emptyGallery.style.display = 'block';
+                        return;
+                    }
+
+                    // Reset pagination
+                    currentPage = 1;
+
+                    // Clear existing images
+                    clearGallery();
+
+                    // Load first batch of images
+                    loadNextBatch();
+
+                }).catch(error => {
+                    console.error('Error getting download URLs:', error);
+                    galleryLoader.style.display = 'none';
+                    emptyGallery.style.display = 'block';
+                });
+
+            }).catch((error) => {
+                // Hide loader
+                galleryLoader.style.display = 'none';
+
+                // Show empty gallery if there's an error (like folder doesn't exist)
+                emptyGallery.style.display = 'block';
+                console.error('Error listing images:', error);
+            });
+        }
+
+        // Filter images by category
+        function filterImages(category) {
+            // Update active button styling
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            if (category === 'all') {
+                activeFilter = '';
+                document.getElementById('showAllBtn').classList.add('active');
+            } else {
+                activeFilter = category;
+                if (category === 'nature') {
+                    natureBtn.classList.add('active');
+                } else if (category === 'car') {
+                    carBtn.classList.add('active');
+                }
+            }
+
+            // Apply filter
+            applyFilter();
+        }
+
+        // Apply current filter to images
+        function applyFilter() {
+            if (activeFilter) {
+                filteredImages = allImages.filter(image =>
+                    image.name.toLowerCase().includes(activeFilter)
+                );
+            } else {
+                filteredImages = [...allImages];
+            }
+
+            totalImages = filteredImages.length;
+            currentPage = 1;
+            clearGallery();
+            loadNextBatch();
+        }
+
+        function handleSearch() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+
+            if (!searchTerm) {
+                filteredImages = [...allImages];
+            } else {
+                const queryWords = searchTerm.split(/\s+/);
+
+                filteredImages = allImages.filter(image => {
+                    const fileName = image.name.toLowerCase().replace(/[_\-]/g, ' ');
+                    const fileWords = fileName.split(/[\s\.]+/); // normalize to word list
+
+                    return queryWords.every(q =>
+                        fileWords.some(w => w.includes(q))
+                    );
+                });
+            }
+
+            totalImages = filteredImages.length;
+            currentPage = 1;
+            clearGallery();
+            loadNextBatch();
+        }
+
+        function loadMoreImages() {
+            currentPage++;
+            loadNextBatch();
+        }
+
+        function loadNextBatch() {
+            emptyGallery.style.display = 'none';
+
+            const startIndex = (currentPage - 1) * imagesPerPage;
+            const endIndex = Math.min(startIndex + imagesPerPage, filteredImages.length);
+
+            if (filteredImages.length > 0) {
+                galleryLoader.style.display = 'block';
+            }
+
+            let loadedCount = 0;
+            const totalToLoad = endIndex - startIndex;
+
+            if (totalToLoad === 0) {
+                galleryLoader.style.display = 'none';
+
+                if (filteredImages.length === 0) {
+                    emptyGallery.style.display = 'block';
+                }
+                return;
+            }
+
+            for (let i = startIndex; i < endIndex; i++) {
+                const imageData = filteredImages[i];
+
+                addImageToGallery(imageData.url, imageData.name);
+
+                loadedCount++;
+
+                if (loadedCount === totalToLoad) {
+                    galleryLoader.style.display = 'none';
+
+                    if (endIndex < filteredImages.length) {
+                        loadMoreContainer.style.display = 'block';
+                    } else {
+                        loadMoreContainer.style.display = 'none';
+                    }
+
+                    if (filteredImages.length === 0) {
+                        emptyGallery.style.display = 'block';
+                    }
+                }
+            }
+        }
+
+        // Clear the gallery except for loader and empty message
+        function clearGallery() {
+            const galleryItems = Array.from(imageGallery.children);
+
+            galleryItems.forEach(item => {
+                if (!item.classList.contains('loader') &&
+                    !item.classList.contains('empty-gallery')) {
+                    item.remove();
+                }
+            });
+
+            // Hide load more button when clearing gallery
+            loadMoreContainer.style.display = 'none';
+        }
+
+        // Initialize by hiding progress container and load images
+        progressContainer.style.display = 'none';
+        document.addEventListener('DOMContentLoaded', () => {
+            loadImages();
+        });
+    </script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('mobileSidebar');
+            sidebar.classList.toggle('active');
+        }
+    </script>
+
+</body>
+
+</html>
